@@ -1,34 +1,39 @@
 package com.example.jwtauth.config
 
+import com.example.jwtauth.dao.MemberDao
+import com.example.jwtauth.entity.Member
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class CustomUserDetails: UserDetails {
+class CustomUserDetails(
+    private val member: MemberDao
+): UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        TODO("Not yet implemented")
+        return mutableListOf<SimpleGrantedAuthority>(SimpleGrantedAuthority(member.authority))
     }
 
     override fun getPassword(): String {
-        TODO("Not yet implemented")
+        return member.password
     }
 
     override fun getUsername(): String {
-        TODO("Not yet implemented")
+        return member.username
     }
 
     override fun isAccountNonExpired(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun isAccountNonLocked(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun isCredentialsNonExpired(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun isEnabled(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 }

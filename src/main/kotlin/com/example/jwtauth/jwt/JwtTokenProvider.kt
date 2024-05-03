@@ -1,12 +1,13 @@
 package com.example.jwtauth.jwt
 
-import io.jsonwebtoken.Header
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.util.Date
+import java.util.*
 
 @Component
 class JwtTokenProvider {
@@ -15,7 +16,7 @@ class JwtTokenProvider {
         private val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray(Charsets.UTF_8))
     }
 
-    fun generateToken(id: String): String {
+    fun generateToken(username: String, authorities: MutableCollection<out GrantedAuthority>): String {
         val date = Date()
         val expirationTime = Date(date.time + Duration.ofMinutes(60).toMillis())
 
@@ -25,17 +26,36 @@ class JwtTokenProvider {
             .issuer("raonpark")
             .issuedAt(date)
             .expiration(expirationTime)
-            .claim("id", id)
+            .claim("username", username)
+            .claim("authorities", authorities)
             .signWith(key)
             .compact()
     }
 
-    fun validateToken(token: String, id: String): Boolean {
+    fun validateToken(token: String): Boolean {
         val claims = Jwts.parser().verifyWith(key)
             .build()
             .parseSignedClaims(token)
             .payload
 
-        return claims.get("id", String::class.java) == id
+        return claims.expiration.after(Date(System.currentTimeMillis()))
+    }
+
+    fun getUserDetails(token: String): UserDetails {
+        val claims = Jwts.parser()
+            .verifyWith(key)
+            .requireIssuer("raonpark")
+            .build()
+            .parseSignedClaims(token)
+            .payload
+
+        val username = claims["username"] as String
+        val authorities = claims["authorities"] as String
+
+        return User.builder()
+            .username(username)
+            .password("")
+            .authorities(authorities)
+            .build()
     }
 }

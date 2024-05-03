@@ -5,6 +5,7 @@ import com.example.jwtauth.jwt.JwtTokenProvider
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
+import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -16,7 +17,6 @@ import org.springframework.web.util.ContentCachingRequestWrapper
 import java.io.IOException
 import kotlin.math.log
 
-@Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider
 ): UsernamePasswordAuthenticationFilter() {
@@ -50,7 +50,16 @@ class JwtAuthenticationFilter(
     ) {
         SecurityContextHolder.getContext().authentication = authResult
 
-        val id = authResult!!.principal as
-        val jwtToken = jwtTokenProvider.generateToken()
+        val userDetails = authResult!!.principal as CustomUserDetails
+        val jwtToken = jwtTokenProvider.generateToken(userDetails.username, userDetails.authorities)
+
+        val cookie = Cookie("JWT", jwtToken)
+        cookie.path = "/"
+        cookie.isHttpOnly = false
+        cookie.maxAge = 3600
+
+        response!!.addCookie(cookie)
+
+        chain!!.doFilter(request, response)
     }
 }

@@ -12,7 +12,7 @@ class CorsConfig {
     fun corsConfiguration(): CorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowedMethods = mutableListOf("GET", "POST", "DELETE", "OPTIONS")
-        config.allowedHeaders = mutableListOf("Authorization", "referer")
+        config.allowedHeaders = mutableListOf("Authorization", "referer", "JWT")
         config.allowedOrigins = mutableListOf("http://localhost:8080")
         config.maxAge = 10000L
 
