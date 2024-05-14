@@ -1,7 +1,6 @@
 package com.example.jwtauth.config
 
 import com.example.jwtauth.dao.MemberDao
-import com.example.jwtauth.entity.Member
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

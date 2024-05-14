@@ -1,10 +1,14 @@
 package com.example.jwtauth.entity
 
-import org.jetbrains.exposed.dao.id.UUIDTable
+import java.util.UUID
 
-object Member: UUIDTable() {
-    val loginId = varchar("loginId", 30)
-    val name = varchar("name", 50)
-    val password = varchar("password", 100)
-    val authority = varchar("authority", 10)
-}
+data class Member(
+    val id: MemberId,
+    val name: String,
+    val password: String,
+    val authority: String,
+    val loginId: String,
+)
+
+@JvmInline
+value class MemberId(val value: UUID)
