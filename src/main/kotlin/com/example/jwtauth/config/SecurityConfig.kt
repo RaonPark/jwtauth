@@ -3,6 +3,9 @@ package com.example.jwtauth.config
 import com.example.jwtauth.jwt.JwtTokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -15,7 +18,8 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val authenticationConfig: AuthenticationConfiguration
 ) {
     @Bean
     fun securityFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
@@ -43,7 +47,8 @@ class SecurityConfig(
     @Bean
     fun jwtAuthenticationFilter(): JwtAuthenticationFilter {
         val filter = JwtAuthenticationFilter(jwtTokenProvider)
-        filter.setFilterProcessesUrl("/api/login")
+        filter.setAuthenticationManager(authenticationManager(authenticationConfig))
+        filter.setFilterProcessesUrl("/member/login")
         return filter
     }
 
@@ -51,4 +56,7 @@ class SecurityConfig(
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
+
+    @Bean
+    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
 }

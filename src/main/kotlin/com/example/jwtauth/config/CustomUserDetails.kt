@@ -1,13 +1,11 @@
 package com.example.jwtauth.config
 
-import com.example.jwtauth.dao.MemberDao
+import com.example.jwtauth.entity.Member
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class CustomUserDetails(
-    private val member: MemberDao
-): UserDetails {
+class CustomUserDetails(private val member: Member): UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf<SimpleGrantedAuthority>(SimpleGrantedAuthority(member.authority))
     }
@@ -17,7 +15,7 @@ class CustomUserDetails(
     }
 
     override fun getUsername(): String {
-        return member.username
+        return member.name
     }
 
     override fun isAccountNonExpired(): Boolean {
