@@ -33,4 +33,8 @@ class CustomUserDetails(private val member: Member): UserDetails {
     override fun isEnabled(): Boolean {
         return true
     }
+
+    fun getLoginId(): String {
+        return member.loginId
+    }
 }

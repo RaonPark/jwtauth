@@ -32,8 +32,10 @@ class JwtAuthenticationFilter(
         } else {
             val cachingRequest = ContentCachingRequestWrapper(request)
             try {
-                val objectMapper = ObjectMapper()
-                val loginDTO = objectMapper.readValue<LoginDTO>(cachingRequest.inputStream, LoginDTO::class.java)
+//                val objectMapper = ObjectMapper()
+//                val loginDTO = objectMapper.readValue<LoginDTO>(cachingRequest.inputStream, LoginDTO::class.java)
+                val loginDTO = LoginDTO(cachingRequest.getParameter("loginId"),
+                    cachingRequest.getParameter("password"))
                 token = UsernamePasswordAuthenticationToken(loginDTO.loginId, loginDTO.password)
             } catch (e: IOException) {
                 println(e.stackTrace)

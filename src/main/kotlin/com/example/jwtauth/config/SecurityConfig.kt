@@ -1,6 +1,8 @@
 package com.example.jwtauth.config
 
 import com.example.jwtauth.jwt.JwtTokenProvider
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -9,6 +11,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -29,8 +33,9 @@ class SecurityConfig(
             formLogin { disable() }
             httpBasic { disable() }
             authorizeRequests {
-                authorize("/api/login/**", permitAll)
-                authorize("/api/register/**", permitAll)
+                authorize("/member/login/**", permitAll)
+                authorize("/member/register/**", permitAll)
+                authorize(PathRequest.toH2Console(), permitAll)
                 authorize("/api/**", hasAnyRole("USER", "BUSINESS", "ADMIN"))
                 authorize("/business/**", hasAnyRole("BUSINESS", "ADMIN"))
                 authorize("/root/**", hasAnyRole("ADMIN"))
@@ -59,4 +64,10 @@ class SecurityConfig(
 
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
+
+    @Bean
+    @ConditionalOnProperty(name = ["spring.h2.console.enabled"], havingValue = "true")
+    fun configureH2ConsoleEnable(): WebSecurityCustomizer {
+        return WebSecurityCustomizer { web -> web.ignoring().requestMatchers(PathRequest.toH2Console()) }
+    }
 }

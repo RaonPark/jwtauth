@@ -1,5 +1,6 @@
 package com.example.jwtauth.controller
 
+import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
 import com.example.jwtauth.entity.MemberEntity
 import com.example.jwtauth.entity.MemberId
@@ -13,6 +14,8 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -58,5 +61,12 @@ class MemberController(
         } else {
             ResponseEntity.badRequest().body(null)
         }
+    }
+
+    @PostMapping("/member/register")
+    fun register(@RequestBody member: MemberRequest): ResponseEntity<UUID> {
+        val id = memberService.create(member)
+
+        return ResponseEntity.ok(id.value)
     }
 }
