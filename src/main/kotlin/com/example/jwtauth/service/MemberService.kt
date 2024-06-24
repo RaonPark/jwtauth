@@ -35,8 +35,8 @@ class MemberService(
     }
 
     fun login(loginId: String, password: String): Boolean {
-        val memberPw = MemberEntity.select(MemberEntity.loginId eq loginId).limit(1).map { it[MemberEntity.password] }
-            .singleOrNull().let { "unknownPassword" }
+        val memberPw = MemberEntity.selectAll().where { MemberEntity.loginId eq loginId }
+            .singleOrNull()?.let { it[MemberEntity.password] }
         return passwordEncoder.matches(password, memberPw)
     }
 
@@ -44,7 +44,7 @@ class MemberService(
         val response = request.cookies.map {
             if(it.name == "JWT") {
                 val userDetails = jwtTokenProvider.getUserDetails(it.value)
-                return@map MemberEntity.select(MemberEntity.name eq userDetails.username).limit(1).singleOrNull()?.let { resultRow ->
+                return@map MemberEntity.selectAll().where { MemberEntity.name eq userDetails.username }.singleOrNull()?.let { resultRow ->
                     MemberResponse(
                         id = MemberId(resultRow[MemberEntity.id].value).value,
                         loginId = resultRow[MemberEntity.loginId],

@@ -5,6 +5,7 @@ import com.example.jwtauth.entity.MemberEntity
 import com.example.jwtauth.entity.MemberId
 import com.example.jwtauth.service.MemberService
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -17,7 +18,7 @@ class CustomUserDetailsService: UserDetailsService {
         if(loginId == null)
             throw Exception()
         val member = transaction {
-            MemberEntity.select(MemberEntity.loginId eq loginId).limit(1).single().let {
+            MemberEntity.selectAll().where { MemberEntity.loginId eq loginId }.single().let {
                 Member(
                     id = MemberId(it[MemberEntity.id].value),
                     loginId = it[MemberEntity.loginId],
@@ -27,6 +28,7 @@ class CustomUserDetailsService: UserDetailsService {
                 )
             }
         }
+
         return CustomUserDetails(member)
     }
 }
