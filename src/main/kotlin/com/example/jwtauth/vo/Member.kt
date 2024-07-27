@@ -1,4 +1,4 @@
-package com.example.jwtauth.entity
+package com.example.jwtauth.vo
 
 import java.util.UUID
 

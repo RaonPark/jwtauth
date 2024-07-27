@@ -2,16 +2,10 @@ package com.example.jwtauth.controller
 
 import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
-import com.example.jwtauth.entity.MemberEntity
-import com.example.jwtauth.entity.MemberId
-import com.example.jwtauth.jwt.JwtTokenProvider
+import com.example.jwtauth.vo.MemberId
 import com.example.jwtauth.service.MemberService
 import jakarta.servlet.http.HttpServletRequest
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.selectAll
 import org.springframework.http.ResponseEntity
-import org.springframework.security.config.annotation.authentication.configurers.provisioning.UserDetailsManagerConfigurer.UserDetailsBuilder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping

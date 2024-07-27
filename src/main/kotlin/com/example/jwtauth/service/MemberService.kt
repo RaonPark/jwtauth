@@ -2,13 +2,11 @@ package com.example.jwtauth.service
 
 import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
-import com.example.jwtauth.entity.Member
+import com.example.jwtauth.vo.Member
 import com.example.jwtauth.entity.MemberEntity
-import com.example.jwtauth.entity.MemberId
+import com.example.jwtauth.vo.MemberId
 import com.example.jwtauth.jwt.JwtTokenProvider
 import jakarta.servlet.http.HttpServletRequest
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.springframework.security.crypto.password.PasswordEncoder
