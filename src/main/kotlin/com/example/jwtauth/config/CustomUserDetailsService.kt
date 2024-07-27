@@ -1,16 +1,13 @@
 package com.example.jwtauth.config
 
-import com.example.jwtauth.entity.Member
+import com.example.jwtauth.vo.Member
 import com.example.jwtauth.entity.MemberEntity
-import com.example.jwtauth.entity.MemberId
-import com.example.jwtauth.service.MemberService
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import com.example.jwtauth.vo.MemberId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
 class CustomUserDetailsService: UserDetailsService {

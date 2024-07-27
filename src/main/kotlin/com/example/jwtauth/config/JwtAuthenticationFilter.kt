@@ -1,9 +1,7 @@
 package com.example.jwtauth.config
 
-import com.example.jwtauth.dto.LoginDTO
+import com.example.jwtauth.dto.LoginRequest
 import com.example.jwtauth.jwt.JwtTokenProvider
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -12,10 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.stereotype.Component
 import org.springframework.web.util.ContentCachingRequestWrapper
 import java.io.IOException
-import kotlin.math.log
 
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider
@@ -34,9 +30,9 @@ class JwtAuthenticationFilter(
             try {
 //                val objectMapper = ObjectMapper()
 //                val loginDTO = objectMapper.readValue<LoginDTO>(cachingRequest.inputStream, LoginDTO::class.java)
-                val loginDTO = LoginDTO(cachingRequest.getParameter("loginId"),
+                val loginRequest = LoginRequest(cachingRequest.getParameter("loginId"),
                     cachingRequest.getParameter("password"))
-                token = UsernamePasswordAuthenticationToken(loginDTO.loginId, loginDTO.password)
+                token = UsernamePasswordAuthenticationToken(loginRequest.loginId, loginRequest.password)
             } catch (e: IOException) {
                 println(e.stackTrace)
             }

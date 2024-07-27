@@ -18,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
@@ -35,6 +36,7 @@ class SecurityConfig(
             authorizeRequests {
                 authorize("/member/login/**", permitAll)
                 authorize("/member/register/**", permitAll)
+                authorize("/member/jwt", permitAll)
                 authorize(PathRequest.toH2Console(), permitAll)
                 authorize("/api/**", hasAnyRole("USER", "BUSINESS", "ADMIN"))
                 authorize("/business/**", hasAnyRole("BUSINESS", "ADMIN"))
@@ -46,6 +48,8 @@ class SecurityConfig(
             addFilterBefore<JwtAuthenticationFilter>(jwtAuthenticationFilter())
         }
 
+        httpSecurity.addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter::class.java)
+
         return httpSecurity.build()
     }
 
@@ -55,6 +59,11 @@ class SecurityConfig(
         filter.setAuthenticationManager(authenticationManager(authenticationConfig))
         filter.setFilterProcessesUrl("/member/login")
         return filter
+    }
+
+    @Bean
+    fun jwtRequestFilter(): JwtRequestFilter {
+        return JwtRequestFilter(jwtTokenProvider)
     }
 
     @Bean
