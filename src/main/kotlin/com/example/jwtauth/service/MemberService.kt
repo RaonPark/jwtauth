@@ -3,7 +3,7 @@ package com.example.jwtauth.service
 import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
 import com.example.jwtauth.vo.Member
-import com.example.jwtauth.entity.MemberEntity
+import com.example.jwtauth.table.MemberTable
 import com.example.jwtauth.vo.MemberId
 import com.example.jwtauth.jwt.JwtTokenProvider
 import jakarta.servlet.http.HttpServletRequest
@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.selectAll
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Component
 @Transactional
@@ -21,20 +20,19 @@ class MemberService(
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun findMemberById(id: MemberId): Member? {
-        return MemberEntity.selectAll().where { MemberEntity.id eq id.value }.firstOrNull()?.let {
+        return MemberTable.selectAll().where { MemberTable.id eq id.value }.firstOrNull()?.let {
             Member(
-                id = MemberId(it[MemberEntity.id].value),
-                name = it[MemberEntity.name],
-                loginId = it[MemberEntity.loginId],
-                password = it[MemberEntity.password],
-                authority = it[MemberEntity.authority],
+                name = it[MemberTable.name],
+                loginId = it[MemberTable.loginId],
+                password = it[MemberTable.password],
+                authority = it[MemberTable.authority],
             )
         }
     }
 
     fun login(loginId: String, password: String): Boolean {
-        val memberPw = MemberEntity.selectAll().where { MemberEntity.loginId eq loginId }
-            .singleOrNull()?.let { it[MemberEntity.password] }
+        val memberPw = MemberTable.selectAll().where { MemberTable.loginId eq loginId }
+            .singleOrNull()?.let { it[MemberTable.password] }
         return passwordEncoder.matches(password, memberPw)
     }
 
@@ -42,17 +40,15 @@ class MemberService(
         val response = request.cookies.map {
             if(it.name == "JWT") {
                 val userDetails = jwtTokenProvider.getUserDetails(it.value)
-                return@map MemberEntity.selectAll().where { MemberEntity.name eq userDetails.username }.singleOrNull()?.let { resultRow ->
+                return@map MemberTable.selectAll().where { MemberTable.name eq userDetails.username }.singleOrNull()?.let { resultRow ->
                     MemberResponse(
-                        id = MemberId(resultRow[MemberEntity.id].value).value,
-                        loginId = resultRow[MemberEntity.loginId],
-                        name = resultRow[MemberEntity.name],
-                        authority = resultRow[MemberEntity.authority]
+                        loginId = resultRow[MemberTable.loginId],
+                        name = resultRow[MemberTable.name],
+                        authority = resultRow[MemberTable.authority]
                     )
                 }!!
             } else {
                 return@map MemberResponse(
-                    id = MemberId(UUID.randomUUID()).value,
                     loginId = "ANONYMOUS",
                     name = "ANONYMOUS",
                     authority = "NOOP"
@@ -64,7 +60,7 @@ class MemberService(
     }
 
     fun create(member: MemberRequest): MemberId {
-        val id = MemberEntity.insertAndGetId {
+        val id = MemberTable.insertAndGetId {
             it[loginId] = member.loginId
             it[password] = passwordEncoder.encode(member.password)
             it[name] = member.name

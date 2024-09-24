@@ -1,6 +1,6 @@
 package com.example.jwtauth.support
 
-import com.example.jwtauth.entity.MemberEntity
+import com.example.jwtauth.table.MemberTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,7 +20,7 @@ class SchemaInitialize : ApplicationRunner {
             password = ""
         )
         transaction {
-            SchemaUtils.create(MemberEntity)
+            SchemaUtils.create(MemberTable)
         }
     }
 }

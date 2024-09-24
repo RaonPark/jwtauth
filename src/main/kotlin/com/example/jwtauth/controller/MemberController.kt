@@ -25,7 +25,6 @@ class MemberController(
         return if(member != null) {
             ResponseEntity.ok(
                 MemberResponse(
-                    id = member.id.value,
                     loginId = member.loginId,
                     name = member.name,
                     authority = member.authority
