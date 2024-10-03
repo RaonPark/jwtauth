@@ -61,6 +61,40 @@ return type:
 <img width="271" alt="image" src="https://github.com/user-attachments/assets/c3180027-a4e9-44c9-b781-02ea2b2459e4"><br/>
 - Postman을 사용한 LocalDateTime 직렬화를 할 때 제대로 되지 않아서 (KSerialize라는 클래스를 찾지 못하는 오류가 발생함) kotlinx-serialization-json 패키지와 kotlinx-datetime 패키지를 추가하여 해결할 수 있었다.<br/>
 
+## 에러 해결 방법
+### 1. KoTest에서 No transaction in context 에러
+```kotlin
+SchemaUtils.create(MemberTable, BoardTable)
+
+given("게시판에 글을 쓸 유저 한 명이 주어진다.") {
+val user = transaction {
+    MemberTable.insertAndGetId {
+        it[loginId] = "raonpark"
+        it[name] = "박수민"
+        it[password] = "1234"
+        it[authority] = "USER"
+    }
+}
+
+`when`("게시판에 raonpark 아이디를 가진 유저가 글을 쓴다.") {
+    transaction {
+        BoardTable.insert {
+            it[title] = "테일러 314CE 사실 분?"
+            it[content] = "테일러 314CE 2년 안됐는데 사실 분 구합니다."
+            it[image] = "asdfawerw"
+            it[username] = user
+            it[published] = CurrentDateTime
+            it[type] = TypeOfBoard.TRADING
+        }
+    }
+
+    then("게시판에 새로운 글 하나가 올라왔다.") {
+        transaction { BoardTable.selectAll().count() } shouldBeGreaterThan 0
+    }
+}
+```
+이 경우에서 Database.connect()는 괜찮지만 SchemaUtils.create()는 transaction {} 블록에 넣어야 no transaction in context 문제가 해결된다.
+<img width="528" alt="스크린샷 2024-10-03 오후 4 59 05" src="https://github.com/user-attachments/assets/e5f56510-e9b1-4870-be92-8efea4cc61a0"><br/>
 
 
 
