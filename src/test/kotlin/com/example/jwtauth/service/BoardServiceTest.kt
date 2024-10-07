@@ -1,81 +1,95 @@
 package com.example.jwtauth.service
 
 import com.example.jwtauth.support.TypeOfBoard
-import com.example.jwtauth.table.*
+import com.example.jwtauth.table.BoardTable
+import com.example.jwtauth.table.MemberTable
 import com.example.jwtauth.vo.Board
-import com.example.jwtauth.vo.Member
-import com.example.jwtauth.vo.MemberId
-import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.ints.shouldBeGreaterThan
-import io.kotest.matchers.shouldBe
-import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
-import kotlinx.datetime.*
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
+import io.kotest.matchers.shouldNotBe
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
-import java.util.UUID
+import java.util.*
 
-@SpringBootTest
+@SpringBootTest(classes = [BoardServiceTest::class])
 @ActiveProfiles("test")
 @TestPropertySource(locations = ["classpath:application-test.yml"])
 object BoardServiceTest: BehaviorSpec({
-
     extensions(SpringExtension)
 
-    lateinit var user: Member
-    lateinit var newBoard: Board
-    lateinit var userId: EntityID<UUID>
+    // relaxed = true 옵션은 primitive(int, double, String 등등)은 모두 기본값(default)을 반환한다.
 
-    val memberTable: MemberTable = mockk(relaxed = true)
-    val boardTable: BoardTable = mockk(relaxed = true)
-    val boardService = BoardService(boardTable)
-
-    Database.connect(url = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false",
-        driver = "org.h2.Driver", user = "sa")
+    Database.connect("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false",
+        driver = "org.h2.Driver", user = "sa", password = "")
 
     transaction {
-        SchemaUtils.create(MemberTable, BoardTable, GuitarTable, GuitarCompanyTable)
-    }
+        SchemaUtils.create(BoardTable, MemberTable)
 
-    user = Member(loginId = "martin", password = "12345678", authority = "user", name = "martin")
-    newBoard = Board(title="테일러 314CE 사실분?", content="테일러 314CE 2년 썼는데 사실 분 구합니다.", username = "martin",
-        image="thisImage", published = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Seoul")),
-        type=TypeOfBoard.TRADING)
+        val boardService = BoardService(BoardTable, MemberTable)
+        given("raonpark이라는 이름의 유저가 주어진다.") {
+            val user = transaction {
+                MemberTable.insertAndGetId {
+                    it[loginId] = "raonpark"
+                    it[name] = "박수민"
+                    it[password] = "1234"
+                    it[authority] = "USER"
+                }
+            }
 
-    mockkStatic("org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManagerKt")
+            val board = Board(
+                title = "안녕하세요!",
+                content = "기타 3년친 뉴비입니다. 잘 부탁드립니다.",
+                image = "",
+                username = "박수민",
+                published = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                type = TypeOfBoard.FREE
+            )
 
-    given("게시판에 게시물 1개 올리기") {
-        `when`("거래 게시판에 martin이라는 이름의 유저가 게시물을 올린다.") {
-            val boardId = boardService.publishArticle(newBoard)
-            then("boardId에 제대로 된 ID 값이 나온다.") {
-                boardId shouldBeGreaterThan 0
+            `when`("유저가 게시판에 게시글을 집어넣는다.") {
+
+                val id = boardService.publishArticle(board)
+
+                then("반드시 id를 반환해야한다.") {
+                    id shouldBeGreaterThan 0
+                }
             }
         }
-    }
 
-    xgiven("게시판에 게시물 삭제하기") {
-        `when`("거래 게시판에 있는 martin라는 이름의 유저가 게시물을 삭제한다.") {
+        given("게시글과 유저 하나가 주어진다.") {
+            val user = transaction {
+                MemberTable.insertAndGetId {
+                    it[loginId] = "raonpark"
+                    it[name] = "박수민"
+                    it[password] = "1234"
+                    it[authority] = "USER"
+                }
+            }
 
+            val board = Board(
+                title = "안녕하세요!",
+                content = "기타 3년친 뉴비입니다. 잘 부탁드립니다.",
+                image = "",
+                username = "박수민",
+                published = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                type = TypeOfBoard.FREE
+            )
+            `when`("게시판에 올리고 삭제한다.") {
+
+                val publishResult = boardService.publishArticle(board)
+                val result = boardService.deleteArticle(publishResult)
+
+                then("삭제한 로우가 1개 이상이어야 한다.") {
+                    result shouldBeGreaterThan 0
+                }
+            }
         }
-    }
-
-    xgiven("게시판에 게시물 업데이트하기") {
-        `when`("거래 게시판에 있는 ") {
-
-        }
-    }
-
-    afterTest {
-        unmockkAll()
     }
 })
