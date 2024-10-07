@@ -22,10 +22,12 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import java.util.UUID
 
 @SpringBootTest
 @ActiveProfiles("test")
+@TestPropertySource(locations = ["classpath:application-test.yml"])
 object BoardServiceTest: BehaviorSpec({
 
     extensions(SpringExtension)
@@ -38,25 +40,21 @@ object BoardServiceTest: BehaviorSpec({
     val boardTable: BoardTable = mockk(relaxed = true)
     val boardService = BoardService(boardTable)
 
-    beforeTest {
-        Database.connect(url = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false",
-            driver = "org.h2.Driver", user = "sa")
+    Database.connect(url = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false",
+        driver = "org.h2.Driver", user = "sa")
 
-        transaction {
-            SchemaUtils.create(MemberTable, BoardTable, GuitarTable, GuitarCompanyTable)
-        }
-
-        user = Member(loginId = "martin", password = "12345678", authority = "user", name = "martin")
-        newBoard = Board(title="테일러 314CE 사실분?", content="테일러 314CE 2년 썼는데 사실 분 구합니다.", username = "martin",
-            image="thisImage", published = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Seoul")),
-            type=TypeOfBoard.TRADING)
-
-        mockkStatic("org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManagerKt")
+    transaction {
+        SchemaUtils.create(MemberTable, BoardTable, GuitarTable, GuitarCompanyTable)
     }
 
+    user = Member(loginId = "martin", password = "12345678", authority = "user", name = "martin")
+    newBoard = Board(title="테일러 314CE 사실분?", content="테일러 314CE 2년 썼는데 사실 분 구합니다.", username = "martin",
+        image="thisImage", published = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Seoul")),
+        type=TypeOfBoard.TRADING)
+
+    mockkStatic("org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManagerKt")
+
     given("게시판에 게시물 1개 올리기") {
-
-
         `when`("거래 게시판에 martin이라는 이름의 유저가 게시물을 올린다.") {
             val boardId = boardService.publishArticle(newBoard)
             then("boardId에 제대로 된 ID 값이 나온다.") {
