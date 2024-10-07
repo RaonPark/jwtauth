@@ -94,7 +94,11 @@ val user = transaction {
 }
 ```
 이 경우에서 Database.connect()는 괜찮지만 SchemaUtils.create()는 transaction {} 블록에 넣어야 no transaction in context 문제가 해결된다.
+
 <img width="528" alt="스크린샷 2024-10-03 오후 4 59 05" src="https://github.com/user-attachments/assets/e5f56510-e9b1-4870-be92-8efea4cc61a0"><br/>
 
-
+### 2. IllegalStateException : No target provided for update
+- 해결 못하고 mock을 걷어내는 것으로 해결했다..
+- 굳이 H2에다가 Exposed를 사용하는데 mock까지 사용할 필요는 없는것 같다.
+- mockk에 대해서 조금 공부할 필요는 있을 것 같다.
 
