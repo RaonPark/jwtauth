@@ -3,6 +3,7 @@
 2. Spring-Boot
 3. Exposed
 4. Spring-Boot Security
+5. KoTest
 
 ## API
 ### POST: /member/register
