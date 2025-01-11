@@ -1,0 +1,140 @@
+version: '3'
+services:
+  kafka1:
+    image: bitnami/kafka:latest
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "10000:9094"
+    restart: unless-stopped
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_KRAFT_CLUSTER_ID: ZGI1NTk0YmY3NzVjNDk5MD
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093, 2@kafka2:9093
+      KAFKA_PROCESS_ROLES: controller, broker
+      KAFKA_CFG_LISTENERS: INTERNAL://:9092, CONTROLLER://:9093, EXTERNAL://0.0.0.0:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092, EXTERNAL://kafka1:10000
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      ALLOW_PLAINTEXT_LISTENERS: yes
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT, CONTROLLER:PLAINTEXT, EXTERNAL:PLAINTEXT
+    networks:
+      - jwtauth
+
+  kafka2:
+    image: bitnami/kafka:latest
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "10001:9094"
+    restart: unless-stopped
+    environment:
+      KAFKA_CFG_NODE_ID: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_KRAFT_CLUSTER_ID: ZGI1NTk0YmY3NzVjNDk5MD
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      # 1번 컨트롤러는 kafka1:9093로 2번 컨트롤러는 kafka2:9093로 quorum voters 를 진행한다.
+      # in listeners setting, i set port of CONTROLLER to 9093
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093,2@kafka2:9093
+      KAFKA_PROCESS_ROLES: controller,broker
+      # for producers and consumers in kafka
+      # and backend container is in jwtauth bridge network, so can reach this node with kafka2:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: INTERNAL://kafka2:9092, EXTERNAL://kafka2:10001
+      # for inside kafka brokers. all ip from 9092 port, is for INTERNAL, AND if BROKER, all ip from 9093 port
+      KAFKA_CFG_LISTENERS: INTERNAL://:9092, CONTROLLER://:9093, EXTERNAL://0.0.0.0:9094
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      ALLOW_PLAINTEXT_LISTENERS: yes
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT, CONTROLLER:PLAINTEXT, EXTERNAL:PLAINTEXT
+    networks:
+      - jwtauth
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "9000:8080"
+    restart: always
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+    depends_on:
+      - kafka1
+      - kafka2
+      - schema-registry
+    networks:
+      - jwtauth
+
+  mysql:
+    image: mysql:latest
+    hostname: mysql
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: jwtAuth
+      MYSQL_USER: user
+      MYSQL_ROOT_PASSWORD: 1234
+      REWRITE_BATCHED_STATEMENTS: true
+    volumes:
+      - /var/lib/mysql
+    networks:
+      - jwtauth
+
+  redis:
+    image: redis:alpine
+    hostname: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./redis/data:/data"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - jwtauth
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry
+    container_name: schema-registry
+    hostname: schema-registry
+    ports:
+      - "8081:8081"
+    restart: always
+    environment:
+      - SCHEMA_REGISTRY_CUB_KAFKA_MIN_BROKERS=2
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka1:9092,kafka2:9092
+    depends_on:
+      - kafka1
+      - kafka2
+    networks:
+      - jwtauth
+
+  backend:
+    image: amazoncorretto:17
+    container_name: backend
+    ports:
+      - "8080:8080"
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATABASE_URL: jdbc:mysql://db:3306/testDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATABASE_USERNAME: root
+      SPRING_DATABASE_PASSWORD: 1234
+    depends_on:
+      - kafka1
+      - kafka2
+      - redis
+      - mysql
+      - schema-registry
+      - kafka-ui
+    networks:
+      - jwtauth
+
+networks:
+  jwtauth:
+    driver: bridge

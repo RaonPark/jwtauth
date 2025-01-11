@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class BoardService(
     private val boardTable: BoardTable,
     private val memberTable: MemberTable) {

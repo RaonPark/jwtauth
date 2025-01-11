@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @SpringBootTest(classes = [BoardServiceTest::class])
@@ -59,6 +60,7 @@ object BoardServiceTest: BehaviorSpec({
 
                 then("반드시 id를 반환해야한다.") {
                     id shouldBeGreaterThan 0
+                    println(id)
                 }
             }
         }
@@ -88,6 +90,36 @@ object BoardServiceTest: BehaviorSpec({
 
                 then("삭제한 로우가 1개 이상이어야 한다.") {
                     result shouldBeGreaterThan 0
+                }
+            }
+        }
+
+        given("게시물의 내용을 변경하기 위한 게시물과 유저가 주어진다.") {
+            val user = transaction {
+                MemberTable.insertAndGetId {
+                    it[loginId] = "raonpark"
+                    it[name] = "박수민"
+                    it[password] = "1234"
+                    it[authority] = "USER"
+                }
+            }
+
+            val board = Board(
+                title = "안녕하세요!",
+                content = "기타 3년친 뉴비입니다. 잘 부탁드립니다.",
+                image = "",
+                username = "박수민",
+                published = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                type = TypeOfBoard.FREE
+            )
+
+            `when`("게시물을 업로드하고 게시물의 내용을 변경한다.") {
+                boardService.publishArticle(board)
+
+                board.content = "기타 3년친 뉴비입니다. 잘 부탁드립니다. 서울에 살고 있어요."
+
+                then("게시물의 내용이 변경된 내용과 같아야한다.") {
+
                 }
             }
         }

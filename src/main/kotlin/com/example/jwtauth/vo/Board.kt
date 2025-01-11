@@ -4,10 +4,10 @@ import com.example.jwtauth.support.TypeOfBoard
 import kotlinx.datetime.LocalDateTime
 
 data class Board(
-    val title: String,
-    val content: String,
-    val image: String,
-    val username: String,
-    val published: LocalDateTime,
-    val type: TypeOfBoard,
+    var title: String,
+    var content: String,
+    var image: String,
+    var username: String,
+    var published: LocalDateTime,
+    var type: TypeOfBoard,
 )

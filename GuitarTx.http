@@ -1,0 +1,31 @@
+POST http://localhost:8080/member/register
+Content-Type: application/json
+
+{
+  "loginId": "raonpark",
+  "password": "12345678",
+  "name": "raonpark",
+  "role": "user"
+}
+
+> {%
+client.log(`token : ${JSON.stringify(response.body)}`)
+ %}
+
+###
+GET http://localhost:8080/member/login?loginId=raonpark&password=12345678
+
+> {%
+ client.log(JSON.stringify(response.body))
+ %}
+
+###
+POST http://localhost:8080/guitarTx/tx
+Content-Type: application/json
+
+{
+  "guitarName": "Taylor",
+  "txTime": "2025-01-11T13:02:23",
+  "price": 3450000,
+  "county": "Seoul"
+}
