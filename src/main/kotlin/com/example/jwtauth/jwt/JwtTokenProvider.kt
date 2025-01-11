@@ -1,5 +1,7 @@
 package com.example.jwtauth.jwt
 
+import com.example.jwtauth.config.CustomUserDetails
+import com.example.jwtauth.config.CustomUserDetailsService
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.core.GrantedAuthority
@@ -10,7 +12,9 @@ import java.time.Duration
 import java.util.*
 
 @Component
-class JwtTokenProvider {
+class JwtTokenProvider(
+    val customUserDetailsService: CustomUserDetailsService
+) {
     companion object {
         private const val SECRET_KEY = "KINGSGAMBITVIENNAGAMBITSCANDINAVIANDEFENSEITALIANGAMECAROKANNDEFENSE"
         private val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray(Charsets.UTF_8))
@@ -49,13 +53,8 @@ class JwtTokenProvider {
             .parseSignedClaims(token)
             .payload
 
-        val username = claims["username"] as String
-        val authorities = claims["authorities"] as String
+        val username = claims["username", String::class.java]
 
-        return User.builder()
-            .username(username)
-            .password("")
-            .authorities(authorities)
-            .build()
+        return customUserDetailsService.loadUserByUsername(username)
     }
 }

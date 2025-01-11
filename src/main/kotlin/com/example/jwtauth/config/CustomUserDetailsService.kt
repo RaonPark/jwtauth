@@ -1,16 +1,12 @@
 package com.example.jwtauth.config
 
-import com.example.jwtauth.entity.Member
-import com.example.jwtauth.entity.MemberEntity
-import com.example.jwtauth.entity.MemberId
-import com.example.jwtauth.service.MemberService
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import com.example.jwtauth.vo.Member
+import com.example.jwtauth.table.MemberTable
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
 class CustomUserDetailsService: UserDetailsService {
@@ -18,13 +14,12 @@ class CustomUserDetailsService: UserDetailsService {
         if(loginId == null)
             throw Exception()
         val member = transaction {
-            MemberEntity.selectAll().where { MemberEntity.loginId eq loginId }.single().let {
+            MemberTable.selectAll().where { MemberTable.loginId eq loginId }.single().let {
                 Member(
-                    id = MemberId(it[MemberEntity.id].value),
-                    loginId = it[MemberEntity.loginId],
-                    password = it[MemberEntity.password],
-                    name = it[MemberEntity.name],
-                    authority = it[MemberEntity.authority]
+                    loginId = it[MemberTable.loginId],
+                    password = it[MemberTable.password],
+                    name = it[MemberTable.name],
+                    authority = it[MemberTable.authority]
                 )
             }
         }

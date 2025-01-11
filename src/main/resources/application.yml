@@ -2,10 +2,16 @@ spring:
   application:
     name: jwtauth
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    driver-class-name: "com.mysql.cj.jdbc.Driver"
+    url: jdbc:mysql://mysql:3306/jwtAuth?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: root
+    password: 1234
+    hikari:
+      # 만약 100개의 DB로 넣는 요청이 일어난다고 해보자. 그러면 pool-size = 5인 경우 처음 들어오는 5개의 요청에 커넥션 풀을 받았을 것이다.
+      # 그 5개의 요청이 life time인 몇 초 내로 요청을 처리하지 못하면, 그 다음 요청은 커넥션 풀을 얻지 못할 것이다.
+      # 그러면 당연히 connection is not available 이라는 에러가 발생할 것이고 insert가 실패하게 된다.
+      maximum-pool-size: 10
+      max-lifetime: 30000
   h2:
     console:
       enabled: true

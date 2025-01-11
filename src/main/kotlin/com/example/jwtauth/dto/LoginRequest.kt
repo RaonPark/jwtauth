@@ -1,6 +1,6 @@
 package com.example.jwtauth.dto
 
-data class LoginDTO(
+data class LoginRequest(
     val loginId: String,
     val password: String
 )
