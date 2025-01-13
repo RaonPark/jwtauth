@@ -29,3 +29,14 @@ Content-Type: application/json
   "price": 3450000,
   "county": "Seoul"
 }
+
+###
+POST http://localhost:8080/guitarTx/txDB
+Content-Type: application/json
+
+{
+  "guitarName": "Taylor",
+  "txTime": "2025-01-11T13:02:23",
+  "price": 3450000,
+  "county": "Seoul"
+}

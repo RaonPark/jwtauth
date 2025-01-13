@@ -17,4 +17,11 @@ class GuitarTxController(
     fun transaction(@RequestBody request: GuitarTxRequest) {
         guitarTxService.sendGuitarTx(request)
     }
+
+    @PostMapping("/txDB")
+    fun transactionToDB(@RequestBody request: GuitarTxRequest) {
+        val guitarTxId = guitarTxService.sendGuitarTxWithDB(request)
+
+        guitarTxService.showGuitarTxRequest(guitarTxId)
+    }
 }

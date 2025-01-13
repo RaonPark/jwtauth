@@ -5,20 +5,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +27,18 @@ class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
     private val authenticationConfig: AuthenticationConfiguration
 ) {
+    companion object {
+        @Bean
+        fun roleHierarchy(): RoleHierarchy {
+            val roleHierarchy = RoleHierarchyImpl()
+
+            val roleHierarchyString = "ADMIN>BUSINESS\nBUSINESS>USER\n"
+            roleHierarchy.setHierarchy(roleHierarchyString)
+
+            return roleHierarchy
+        }
+    }
+
     @Bean
     fun securityFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         httpSecurity {
@@ -46,6 +59,12 @@ class SecurityConfig(
             sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
 
             addFilterBefore<JwtAuthenticationFilter>(jwtAuthenticationFilter())
+
+            logout {
+                logoutUrl = "/member/logout"
+                addLogoutHandler(CookieClearingLogoutHandler("JWT")) // 쿠키를 지우고
+                addLogoutHandler(SecurityContextLogoutHandler()) // 시큐리티 컨텍스트를 지운다.
+            }
         }
 
         httpSecurity.addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter::class.java)
