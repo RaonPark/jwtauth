@@ -4,6 +4,22 @@
 3. Exposed
 4. Spring-Boot Security
 5. KoTest
+6. Kafka
+7. Redis
+
+## Security Blog Article
+### 1. Spring Security 이론 (Theory of Spring Security)
+- About Security FilterChain
+  - https://blog.naver.com/sumin9278/223389751589
+- About HttpSecurity Configuration
+  - https://blog.naver.com/sumin9278/223425526557
+- About Authority Architecture of Spring Security
+  - https://blog.naver.com/sumin9278/223725762048
+### 2. Spring Security 적용기 (Let's use Spring Security)
+- Jwt Token Authentication
+  - https://blog.naver.com/sumin9278/223435282622
+- Refactoring project of Jwt Token Authentication, more likely Spring Security 6 style.
+  - https://blog.naver.com/sumin9278/223726929239
 
 ## API
 ### POST: /member/register
