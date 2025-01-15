@@ -1,11 +1,18 @@
 package com.example.jwtauth.controller
 
+import com.example.jwtauth.config.CustomUserDetails
 import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
 import com.example.jwtauth.vo.MemberId
 import com.example.jwtauth.service.MemberService
+import com.example.jwtauth.service.RedisService
+import com.example.jwtauth.vo.Member
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,8 +23,12 @@ import java.util.UUID
 
 @RestController
 class MemberController(
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val redisService: RedisService
 ) {
+    companion object {
+        val log = KotlinLogging.logger { }
+    }
     @GetMapping("/member/{id}")
     fun getMemberById(@PathVariable id: UUID): ResponseEntity<MemberResponse> {
         val member = memberService.findMemberById(MemberId(id))
@@ -61,5 +72,13 @@ class MemberController(
         val id = memberService.create(member)
 
         return ResponseEntity.ok(id.value)
+    }
+
+    @PostMapping("/member/logout")
+    fun logout(authentication: Authentication, request: HttpServletRequest, response: HttpServletResponse): String {
+        val member = authentication.principal as CustomUserDetails
+        redisService.delete("user:${member.username}")
+        log.info { "user:${member.username} has logged out!" }
+        return "logoutOK"
     }
 }

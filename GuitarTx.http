@@ -5,7 +5,7 @@ Content-Type: application/json
   "loginId": "raonpark",
   "password": "12345678",
   "name": "raonpark",
-  "role": "user"
+  "role": "ROLE_USER"
 }
 
 > {%
@@ -17,6 +17,7 @@ GET http://localhost:8080/member/login?loginId=raonpark&password=12345678
 
 > {%
  client.log(JSON.stringify(response.body))
+ client.log(response.headers.valueOf("Set-Cookie"))
  %}
 
 ###
@@ -29,3 +30,21 @@ Content-Type: application/json
   "price": 3450000,
   "county": "Seoul"
 }
+
+###
+POST http://localhost:8080/guitarTx/txDB
+Content-Type: application/json
+
+{
+  "guitarName": "Taylor",
+  "txTime": "2025-01-11T13:02:23",
+  "price": 3450000,
+  "county": "Seoul"
+}
+
+###
+POST http://localhost:8080/member/logout
+
+> {%
+client.log(response.body)
+ %}
