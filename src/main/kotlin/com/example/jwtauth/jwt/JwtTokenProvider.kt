@@ -45,7 +45,7 @@ class JwtTokenProvider(
         return claims.expiration.after(Date(System.currentTimeMillis()))
     }
 
-    fun getUserDetails(token: String): UserDetails {
+    fun getUserDetails(token: String): CustomUserDetails {
         val claims = Jwts.parser()
             .verifyWith(key)
             .requireIssuer("raonpark")

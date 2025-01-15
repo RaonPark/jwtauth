@@ -1,9 +1,13 @@
 package com.example.jwtauth.controller
 
+import com.example.jwtauth.config.CustomUserDetails
 import com.example.jwtauth.dto.MemberRequest
 import com.example.jwtauth.dto.MemberResponse
 import com.example.jwtauth.vo.MemberId
 import com.example.jwtauth.service.MemberService
+import com.example.jwtauth.service.RedisService
+import com.example.jwtauth.vo.Member
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
@@ -20,7 +24,11 @@ import java.util.UUID
 @RestController
 class MemberController(
     private val memberService: MemberService,
+    private val redisService: RedisService
 ) {
+    companion object {
+        val log = KotlinLogging.logger { }
+    }
     @GetMapping("/member/{id}")
     fun getMemberById(@PathVariable id: UUID): ResponseEntity<MemberResponse> {
         val member = memberService.findMemberById(MemberId(id))
@@ -68,6 +76,9 @@ class MemberController(
 
     @PostMapping("/member/logout")
     fun logout(authentication: Authentication, request: HttpServletRequest, response: HttpServletResponse): String {
+        val member = authentication.principal as CustomUserDetails
+        redisService.delete("user:${member.username}")
+        log.info { "user:${member.username} has logged out!" }
         return "logoutOK"
     }
 }

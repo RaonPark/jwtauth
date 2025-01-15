@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CustomUserDetailsService: UserDetailsService {
-    override fun loadUserByUsername(loginId: String?): UserDetails {
+    override fun loadUserByUsername(loginId: String?): CustomUserDetails {
         if(loginId == null)
             throw Exception()
         val member = transaction {

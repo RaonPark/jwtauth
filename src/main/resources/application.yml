@@ -19,3 +19,11 @@ spring:
   exposed:
     show-sql: true
     generate-ddl: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web.filter: DEBUG
